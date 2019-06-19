@@ -1,0 +1,356 @@
+Now a days we have hardware limitations to oversome this limitations we need better and efficient softwares to increase the performance.
+Hardware manufactures are adding more cores to the processors to increase the performance. So the software we dvelop and the programming languges should support concurrency easily and they should be scalable with increased number of cores.
+
+1) In java creating thread is expensive is consumes 1MB memory in heap. Creating too many thread results in outage of heap memory. Inter-thread communication is difficult in many langues.
+2) Go is built keeping concurrency in mind. Go has routines instead of threads. They consume almost 2KB of momory from the heap. So, you can spin millions of gorountines at any time.
+3) Gorountines have a faster startup time than threads.
+4) Goruntines have growable segmented stacks. That means they use more memory only when needed.
+5) Goroutines come with built-in primitives to communicate safely between themselves(channels).
+6) mutex locking is possible when sharing data structures.
+7) Goroutines and OS threads doesn't have 1:1 mapping. A single gorountine can run multiple OS threads. Goroutines are multiplexed into small number of OS threads.
+8) Processors only understand binaries. Generally when we build an application using java, it compiles human readbale code to byte-code. which can be understood by JVM. VM interprets those byte code to binaries that processors can understand.
+9) Go removes one step of execution cycle and increases the performance. It directly compiles human readable code to binaries.
+
+		### SEGMENTED STACKS ###
+		
+Usually when a thread is created a deafult stack space is allocated for its execution in Go which is 8 KB. Each function call has a tiny prologue at function entry. If the allocate space is full morestack function will be envoked. A new stack will be created which has a struct at the bottom of the stack which conatins the address and other details of the previous stack. Lesstack is also added to the new stack while returning back which allows us to adjust stack pointer so that we are returning into the orevious stack. After this we deallocate the stack segment we came from.
+
+If we have a stack split inside a loop. This is relatively expensive because split the stack and deallocate the stack in a loop ends up with large penalty.
+
+       ### STACK COPYING  ###
+	   
+Stack copying means it creates the new stack double the size and copies the old stack into new stack. This means when stack shrinks back we have to do nothing. Shring is a free operation.
+The pointers in the stack refer to the varibales which are live in stack. When we copy the stack all the relevent pointers of the stack are updated with latest targets.
+
+ 
+ ### STACK ###
+ 
+ Stack is the fficient memory for the code to execute as the memory allocated is in first in last out pattern. Which means datat always allocated at the top and popped at the top. Which is cheap.
+ The data initialization inside fuction occupies stack memory after the function execution meomory is deallocated.
+ 
+ ### Heap ###
+ 
+ Data is unsize at compile time is allocated in heap. Datat in heap is less organised. The OS allocates space in the heap and returns the pointer. Accessing the memeory in heap is slower than accessing the memory in the heap. The data initialised outside the function definations are stored in heap.
+ 
+ ### Concurrency VS Parallelism ###
+ 
+ Concurrency is a technique utilized for the decreasing the response time of the system. In concurrency a single processing unit is used to process multiple threads. by context switching they create the illusion of executing parallely but they won't.
+ 
+ Parallelism is a technique for increasing the computation speed. In parallelism starting time and ending should be same. Parrallelism can always be achieved by multiple CPU's.
+ 
+ ### Hyper-threading ####
+ 
+ Hyperthreading is intel new technology to achieve simultaneous multithreading implementation used to improve parallelization of computations.
+ Here single microprocessor acts like to two seperate processors to the OS. which can accomamodate two threads at a time.
+ 
+ * Deallocation usually happens by the interpreter. In compiled languages needs to be done manually.
+ 
+ ### Latency VS THroughput ###
+ 
+ Latency is the time required to perform some action or produce some result.
+ Latency is measured in units of time.
+ Throughput is the number of such actions executed or results produced per unit of time.
+ 
+ ### Garbage-Collection ###
+ 
+ In interpreted languages, it is done by the interpreter.
+	1) Java Virtual machine
+	2) Python interpreter.
+ Go is compiled language which enables garbage collection.
+ Compiler determines stack vs heap during memory allocation.
+ 
+ mark and sweep
+ 
+ Usually mark and sweep is done by pausing the program flow. Which effects the latency. But in Go GC is done concurrents which is efficient.
+ In java a worste case benchmarking takes 158 ms whereas Go takes 7 ms.
+ Mark and sweep is acheieved by TRICOLOUR algorithm which uses breadth for search. Whenever an address of an variable is referneced it is marked over period of time GC is performed concurrently without pausing the program execution completely and performs GC concurrently so Go offers low latency.
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ ### Golang Specifics ####
+ 
+ 
+ 1) In if c:=10, x=c*10 { } is valid. both and initalisation and condition is possible but execution happens for if block if condition is true.
+ 
+ 2) Switch statement can hold multiple values eg: case 5,10,15,25: any of the following is satisfied the case gets executed.
+ 
+ 3)In switch inside the case we can use a keyword "fallthrough". which helps in executing the all the remaining cases from the successful case.
+ 
+ 4) Switch case can have conditional evaluation i.e "case today.day() == 25 :"
+ 
+ ### Go for ###
+ 
+ for ;k<=10;k++ {}
+ for k<=10 {}
+ for k:=1; ;k++ {}
+ 
+ strDict := map[int]string {1:"one",2:"two",3:"three"}
+ for index, element := range strDict { fmt.Println(index,element);}
+ for key := range strDict { fmt.Println(key);}
+ for _, value:= range strDict { fmt.Println(value);}
+ This will loop for the no of chars 
+ for range "Hello" { fmt.Println("Hello"); }
+ Infinite loop using for
+ for {}
+ 
+ ### Go functions ###
+ 
+ func add(a int, b int) int { }
+ func add(a int, b int) (c int) { return c=a+b }
+ 
+ defer keyword is used to execute at the end of the function execution.
+ Basically it is used to close() the opened file. lock something which is unlocked during execution. defer gets executed before exiting the function.
+ The main motive of defer is to optimise the code and to to perform sppecific actions end of a function execution.
+ Deferred functions are run even if a runtime panic occurs.
+ Deferred functions are executed in LIFO order.
+ 
+ ### Vardiac functions ###
+ 
+ Vardiac function is a function we can send infinite arguements to the function.
+ 
+ func example(s ...string) { }
+ func example(i ...interface{}) {}
+ 
+ ### Panic and recover ###
+ 
+ Panic is the built in function taht stops the ordinary flow and starts panicing. Thre is no exception handling in go. Panic is envoked when there are runtime exceptions like memory out of bounds, runtime evaluations exceptions are handled by panic.
+ while panic is envoked all the deffered functions are executed.
+ 
+ Not all panics come from runtime. The built in panic function may be directly called. It accepts any arguement. A panic is best thing to do when some impossible happens.
+ 
+ Recover is built in function that regains control of a panicking goroutine. Recover is only useful inside deferred functions. During normal execution, a call to recover will return nil and have no other effect. If current goroutine is panicking, a call will capture the given value to panic and resume normal execution.
+ 
+ panic(xxx)
+ defer func() {
+ action := recover()
+ fmt.Println(action)
+ }
+ 
+ ### Arrays ###
+ An array is a data structure that consists of a collection of elements of a single type. An array in Go is a fixed length data type that contains contiguous block of elements of the same type.
+ 
+ var intArray [5]int
+ intArray := [...]int{10,20,30,40}
+ 
+ ### variable declaration ###
+ var i=0;
+ i:=0;
+ 
+ 
+ ### Slices ###
+ 
+ A slice is a flexible and extensible data structure to implement and manage collections of data.
+ Basic slice declaration
+ var slice1 = make([]int,10) //when length and capacity is same.
+ var slice2 = make([]int,10,20) // when length and capacity is different.
+ 
+ Declare using new keyword
+ var slice1 = new([50]int)[0:10]
+ in above declaration slice starts witha length of 10, going from 0 to 50.
+ Capacity is 50 so it can expand uoto 50 without request a new array.
+ 
+ Literal declaration
+ var slice = []int{10,20,30}
+ 
+ Enlarge a slice using the append function
+ a:=make([]int,2,5)
+ a=append(a,20,30,40,50) // Enlarge the slice using append function
+ 
+ Enlarge the slice usinga copy function
+ a:=[]int{5,6,7}
+ b:=make([]int,5,10)
+ copy(b,a)
+ 
+ ### Maps ###
+ 
+ A map is data structure that provides unordered pair of key/value pairs.
+ 
+ var employee = map[string]int{}
+ var employee = map[string]int{"Mark":10,"Ben":20}
+ var employee = make(map[string]int)
+ employee["Mark"]=10
+ emplpoyee["Ben"]=20
+ delete(employee,"Mark")
+ employee["Rocky"]=30 //Add element
+ employee["Mark"]=40 //edit element
+ 
+ for key,value := range employee {
+ fmt.Println("Key:",key,"=>","Value",value)
+ }
+ 
+ 
+ ### Variables as functions ###
+ 
+ var funcVar func(int) int 
+ 
+ func incfn(x int) int {
+	return x+1
+	}
+	
+	func main() {
+	funcVar = incFn
+	fmt.Print(funcVar(1))
+	}
+	
+	// In the above example we created a function datatype and pointed an other function to the declared type. Which means are pointing to the same function with different function name which is declared.
+	
+ ### Functions as Arguments ###
+ 
+ func applyIt(afunct func (int) int, val int) int {
+ return afunct(val)
+ }
+ 
+ func incFn(x int) int { return x+1 }
+ func decFn(x int) int { return x-1 }
+ 
+ func main() {
+	fmt.Println(applyIt(incFn,2))
+	fmt.Println(applyIt(decFn,2))
+	}
+	
+	// In the function we have passed function as argument which means the function passed as argument will be executed by taking it as varibale as function in other function.
+	
+	### Anonymous Functions ###
+	
+	Dont need to name a function 
+	If you dont need function to be called anonymous functions will be helpful
+	
+	func applyIt(afunc func (int) int, val int) int {
+	return afunct(val)
+	}
+	
+	func main() {
+	v:= applyIt(func (x int) int { return x+1} ,2)
+	fmt.Println(v)
+	}
+	
+	In the above example the anonymous function is noticed in function as argument. When the applyIt function calls afunct in its function definitation anonymous function will be called.
+	
+	### Returning Functions ###
+	
+	func addPostiveNum(x,y int) func (x,y int) int {
+	if( x>0 && y>0) {
+	fn:= add (x,y int) int {
+	return x+y
+	}
+	}
+	fn:= add(x,y int) int {
+	return x+y
+	}
+	return fn
+	}
+	
+	Here we dont execute the function but we return function which needs to be executed in future. Based on some logoic we return a function.
+	
+	### Closure in Returning functions ###
+	
+	function + its environment
+	When functions are passed/returned, their environment comes with them.
+	
+	func MakeDistOrigin(o_x,o_y float64) func (float64, float64) float64 {
+	
+	fn:= func(x,y float64 {
+	return math.sqrt(math.Pow(x-o_x,2) + math.Pow(y-o_y,2))
+	}
+	
+	func main() {
+		Dist1 := MakeDistOrigin(0,0)
+		Dist2 := MakeDistOrigin(2,2)
+		fmt.Println(Dist1(2,2))
+		fmt.Println(Dist2(2,2))
+	}
+	o_x and o_y are in the closure of fn()
+	
+	In above example Dist1 and Dist2 are two different functions returned from
+	MakeDistOrigin function. Though Dist1 and Dist2 are returned from same 
+	function their functionality is different as MakeDistOrigin function 
+	has provided different enviroment varibales(i.e different values have 
+	been passed while making Dist1 and Dist2 as functions and these functions 
+	depend on the values passed in MakeDistOrigin function).
+	
+	### Functions can take any number of arguements ###
+	
+	func getMax(vals ...int) int {
+		maxV := -1
+		for _, v := range vals {
+			if v > maxV {
+				maxV=val
+				}
+				}
+				return maxV
+				}
+				
+	func main() {
+	fmt.Println(getMax(1,3,6,4))
+	vslice := []int{1,3,6,4}
+	fmt.Println(getMax(vslice...))
+	}
+	
+	when u define function arugument with "..." i.e ellipses can take any number of arguments and it can even consider slice also as it's argument. But slice needs to be passed as getMax(vslice...))
+	
+	
+	### Interfaces in Go ###
+	
+	type Speaker interface {
+		Speak()
+	}
+	
+	type Dog struct {
+	name string 
+	}
+	func (d Dog) Speak() {
+	fmt.Println(d.name)
+	}
+	
+	func main() {
+	var d1 Dog{"Brian"}
+	var s1 speaker
+	s1=d1
+	s1.speak()
+	}
+	
+	// In interfcaes we can mention only menthod signatures no method definitions.
+	dynamic typess are assigned to Interface which conatin the definition to the methods.
+	interfaces can be assigned with nil dynamic values but not with nil dynamic types(i.e var s1 speaker s1.speak() this doesn't work as s1 has nil dynamic type).
+	
+	func PrintMe( val interface{}) {
+		fmt.Println(val)
+		}
+		// This function can accept any type as its argument
+		
+		type shape2D interface {
+			Area() float64
+			Perimeter() float64
+		}
+		
+		type Triangle { ... }
+		func (t Triangle) Area() float64 { ... }
+		func (t Triangle) Perimeter() float64 { ... }
+		type Rectangle {... }
+	    func (t Rectangle) Area() float64 { ... }
+		func (t Rectangle) Perimeter() float64 { ... }
+		
+		// In the above example based on the 
+	
+	
+	
+	
+	
+ 
+ 
+ 
+ 
+ 
